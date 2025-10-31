@@ -132,7 +132,6 @@
             }
         }
 
-        /* canvas responsivo */
         #previewCanvas {
             max-width: 100%;
             border-radius: 8px;
@@ -175,11 +174,9 @@
                 <div class="card">
                     <div class="muted">Visualização</div>
                     <div class="img-wrap" style="margin-top:12px;display:flex;justify-content:center">
-                        <!-- Canvas que vai desenhar o diploma dinamicamente -->
                         <canvas id="previewCanvas" width="420" height="260" role="img"
                             aria-label="Pré-visualização do diploma"></canvas>
                     </div>
-                    <!-- removi o parágrafo de 'simulação' conforme solicitado -->
                 </div>
             </div>
         </div>
@@ -187,15 +184,10 @@
     </div>
 
     <footer>
-        <!-- Removi a menção a 'sistema simulado' aqui -->
         Centro Universitário Estácio de São Paulo — © 2025
     </footer>
 
     <script>
-        /***********************
-         * DADOS (adicione mais entradas conforme necessário)
-         * Cada chave é o número do diploma (exatamente como vai ser pesquisado).
-         ***********************/
         const records = {
             '576578-58': {
                 diploma: '576578-58',
@@ -217,7 +209,7 @@
                 diploma: '47556-64',
                 name: 'Sandra de Cássia P. Torquato',
                 degree: 'Bacharel em Psicologia',
-                inst: 'Centro Universitario Estácio de são Paulo',
+                inst: 'Centro Universitário Estácio de São Paulo',
                 date: 'Conclusão em 19/08/2025',
                 status: 'Ativo'
             },
@@ -225,147 +217,23 @@
                 diploma: '57645-64',
                 name: 'Marcio Borges Ribeiro',
                 degree: 'Bacharel em Psicologia',
-                inst: 'Centro Universitario Estácio de São Paulo',
+                inst: 'Centro Universitário Estácio de São Paulo',
                 date: 'Conclusão em 17/06/2025',
                 status: 'Ativo'
             },
             '74676-64': {
                 diploma: '74676-64',
                 name: 'Vanessa Forasteiro Gonçalves dos Santos',
-                degree: 'Bacharel em Serviço Social',
-                inst: 'Centro Universitario Estácio do Rio de Janeiro',
+                degree: 'Bacharel em Psicologia',
+                inst: 'Centro Universitário Estácio do Rio de Janeiro',
                 date: 'Conclusão em 04/02/2025',
                 status: 'Ativo'
+            },
+            '47656-65': {
+                diploma: '47656-65',
+                name: 'Emanoel Viana Santos',
+                degree: 'Bacharel em Ciências da Computação',
+                inst: 'Centro Universitário Estácio do Maranhão',
+                date: 'Conclusão em 24/08/2024',
+                status: 'Ativo'
             }
-        };
-
-        const q = document.getElementById('q')
-        const btn = document.getElementById('btn')
-        const nameEl = document.getElementById('name')
-        const degreeEl = document.getElementById('degree')
-        const instEl = document.getElementById('inst')
-        const dateEl = document.getElementById('date')
-        const dnumEl = document.getElementById('dnum')
-        const statusEl = document.getElementById('status')
-        const canvas = document.getElementById('previewCanvas')
-        const ctx = canvas.getContext('2d')
-
-        // Função para desenhar a pré-visualização (base + texto)
-        function drawPreview(record) {
-            // Limpa
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-            // Desenhar um "molde" simples de diploma (você pode trocar por imagem base)
-            // fundo
-            ctx.fillStyle = '#f8fafc'
-            ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-            // borda
-            ctx.strokeStyle = '#e6e9ee'
-            ctx.lineWidth = 2
-            ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16)
-
-            // Título
-            ctx.fillStyle = '#0f172a'
-            ctx.font = '600 18px Inter, sans-serif'
-            ctx.fillText('Resultado da verificação', 20, 40)
-
-            // Nome (em destaque)
-            ctx.font = '700 20px Inter, sans-serif'
-            ctx.fillText(record.name || '—', 20, 80)
-
-            // Grau / Instituição / Data
-            ctx.font = '500 13px Inter, sans-serif'
-            ctx.fillStyle = '#374151'
-            ctx.fillText(record.degree || '', 20, 110)
-            ctx.fillText(record.inst || '', 20, 132)
-            ctx.fillText(record.date || '', 20, 154)
-
-            // Status badge (verde ou cinza)
-            const badgeX = canvas.width - 140
-            const badgeY = 30
-            ctx.beginPath()
-            if (record.status && record.status.toLowerCase() === 'ativo') {
-                ctx.fillStyle = '#e6f6e9'
-                ctx.fillRect(badgeX, badgeY, 100, 28)
-                ctx.fillStyle = '#0f612b'
-            } else {
-                ctx.fillStyle = '#fff0f0'
-                ctx.fillRect(badgeX, badgeY, 100, 28)
-                ctx.fillStyle = '#9b1c1c'
-            }
-            ctx.font = '700 13px Inter, sans-serif'
-            ctx.fillText(record.status || 'Não encontrado', badgeX + 12, badgeY + 18)
-
-            // Número do diploma no rodapé do cartão
-            ctx.fillStyle = '#0f172a'
-            ctx.font = '700 12px Inter, sans-serif'
-            ctx.fillText('Nº ' + (record.diploma || '—'), 20, canvas.height - 20)
-        }
-
-        function showNotFound(value) {
-            nameEl.textContent = 'Nenhum registro encontrado para: ' + (value || '')
-            degreeEl.textContent = ''
-            instEl.textContent = ''
-            dateEl.textContent = ''
-            dnumEl.textContent = '—'
-            statusEl.textContent = 'Não encontrado'
-            statusEl.style.background = '#fff0f0'
-            statusEl.style.color = '#9b1c1c'
-
-            // desenha preview genérica "não encontrado"
-            drawPreview({
-                name: '—',
-                degree: '',
-                inst: '',
-                date: '',
-                diploma: value || '—',
-                status: 'Não encontrado'
-            })
-        }
-
-        function showRecord(record) {
-            nameEl.textContent = record.name
-            degreeEl.textContent = record.degree
-            instEl.textContent = record.inst
-            dateEl.textContent = record.date
-            dnumEl.textContent = record.diploma
-            statusEl.textContent = record.status
-            statusEl.style.background = '#e6f6e9'
-            statusEl.style.color = '#0f612b'
-
-            // desenha preview com os dados reais
-            drawPreview(record)
-        }
-
-        btn.addEventListener('click', () => {
-            const v = (q.value || '').trim()
-            if (!v) {
-                alert('Informe o número do diploma para consulta.')
-                return
-            }
-            // busca direta por chave (exata). Se quiser aceitar variações, normalizar aqui.
-            const rec = records[v]
-            if (rec) showRecord(rec)
-            else showNotFound(v)
-        })
-
-        // Se desejar, preencher com um registro conhecido ao abrir (opcional).
-        // Vamos iniciar com tela limpa (sem dados) — o usuário precisa pesquisar.
-        drawPreview({
-            name: 'Digite o nº do diploma',
-            diploma: '—',
-            status: ''
-        })
-
-        /***********************
-         * Como adicionar novos registros:
-         * - Localize o objeto `records` no topo do script.
-         * - Adicione uma nova chave com o número do diploma e o objeto com os campos.
-         * Exemplo:
-         * '999999-01': { diploma: '999999-01', name: 'Fulano de Tal', degree: 'Bacharel em Exemplo', inst: 'Universidade Z', date: 'Conclusão em 01/01/2022', status: 'Ativo' }
-         ***********************/
-    </script>
-</body>
-
-</html>
