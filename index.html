@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -237,3 +238,29 @@
                 date: 'Conclusão em 24/08/2024',
                 status: 'Ativo'
             }
+        };
+
+        document.getElementById('btn').addEventListener('click', function () {
+            const q = document.getElementById('q').value;
+            const result = records[q];
+
+            if (result) {
+                document.getElementById('name').innerText = result.name;
+                document.getElementById('degree').innerText = result.degree;
+                document.getElementById('inst').innerText = result.inst;
+                document.getElementById('date').innerText = result.date;
+                document.getElementById('status').innerText = result.status;
+                document.getElementById('dnum').innerText = result.diploma;
+            } else {
+                document.getElementById('name').innerText = '—';
+                document.getElementById('degree').innerText = '—';
+                document.getElementById('inst').innerText = '—';
+                document.getElementById('date').innerText = '—';
+                document.getElementById('status').innerText = '—';
+                document.getElementById('dnum').innerText = '—';
+            }
+        });
+    </script>
+</body>
+
+</html>
