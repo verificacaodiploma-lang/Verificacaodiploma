@@ -237,11 +237,19 @@
                 inst: 'Centro Universitário Estácio do Maranhão',
                 date: 'Conclusão em 24/08/2024',
                 status: 'Ativo'
+            },
+            '63575-64': {
+                diploma: '63575-64',
+                name: 'Alessandro Soares Ribeiro',
+                degree: 'Pós-Graduação em Enfermagem em Centro Cirúrgico e Central de Material',
+                inst: 'Centro Universitário Estácio de São Paulo',
+                date: 'Conclusão em 24/06/2024',
+                status: 'Ativo'
             }
         };
 
         document.getElementById('btn').addEventListener('click', function () {
-            const q = document.getElementById('q').value;
+            const q = document.getElementById('q').value.trim();
             const result = records[q];
 
             if (result) {
@@ -258,6 +266,7 @@
                 document.getElementById('date').innerText = '—';
                 document.getElementById('status').innerText = '—';
                 document.getElementById('dnum').innerText = '—';
+                alert('Diploma não encontrado. Verifique o número digitado.');
             }
         });
     </script>
