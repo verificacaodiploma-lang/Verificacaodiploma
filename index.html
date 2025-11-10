@@ -151,7 +151,7 @@
     <div class="container">
         <div class="search" role="search" aria-label="Pesquisar diploma">
             <input id="q"
-                placeholder="Consultar por número do diploma (ex: 63466-75, 74467-76, 74567-76, 76467-86)"
+                placeholder="Consultar por número do diploma (ex: 63466-75, 74467-76, 74567-76, 76467-86, 65678-65)"
                 aria-label="Número do diploma" />
             <button id="btn">Consultar</button>
         </div>
@@ -227,6 +227,15 @@
                 date: 'Conclusão em 16/12/2024',
                 status: 'Ativo',
                 campus: 'Brasília'
+            },
+            '65678-65': {
+                diploma: '65678-65',
+                name: 'Valdiane da Silva Campos',
+                degree: 'Licenciatura em Pedagogia',
+                inst: 'Centro Universitário Estácio do Mato Grosso do Sul',
+                date: 'Conclusão em 27/06/2025',
+                status: 'Ativo',
+                campus: 'Mato Grosso do Sul'
             }
         };
 
@@ -244,10 +253,9 @@
                 document.getElementById('status').innerText = result.status;
                 document.getElementById('dnum').innerText = result.diploma;
 
-                // Atualiza o cabeçalho e rodapé conforme o campus
+                // Atualiza cabeçalho e rodapé conforme o campus
                 brand.innerText = `${result.inst} — Sistema de Verificação de Diplomas`;
                 footerText.innerText = `${result.inst} — © 2025`;
-
             } else {
                 alert('Diploma não encontrado. Verifique o número digitado.');
                 document.getElementById('name').innerText = '—';
