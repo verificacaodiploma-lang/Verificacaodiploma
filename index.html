@@ -156,7 +156,8 @@
         return;
       }
 
-      // Exemplo de verificação simulada
+      // ---- REGISTROS ----
+
       if (codigo === "577556-86") {
         box.style.display = "block";
         box.className = "resultado sucesso";
@@ -179,6 +180,18 @@
           "Instituição: Centro Universitário Estácio de São Paulo<br>" +
           "Conclusão: 14/06/2025<br>" +
           "Registro: 57766-77";
+      }
+
+      else if (codigo === "56888-86") {
+        box.style.display = "block";
+        box.className = "resultado sucesso";
+        box.innerHTML =
+          "<strong>Registro encontrado!</strong><br><br>" +
+          "Nome: Claudio Roberto Braz Dias<br>" +
+          "Formação: Licenciatura em Informática<br>" +
+          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
+          "Conclusão: 19/08/2025<br>" +
+          "Registro: 56888-86";
       }
 
       else {
