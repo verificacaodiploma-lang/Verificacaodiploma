@@ -24,7 +24,6 @@
       color: var(--gov-cinza-escuro);
     }
 
-    /* ---- Cabeçalho GOV.BR ---- */
     header {
       background: var(--gov-azul);
       color: white;
@@ -42,7 +41,6 @@
       margin-right: 4px;
     }
 
-    /* ---- Container ---- */
     .container {
       max-width: 760px;
       margin: 40px auto;
@@ -92,7 +90,6 @@
       background: #0f4498;
     }
 
-    /* ---- Resultado ---- */
     .resultado {
       margin-top: 25px;
       padding: 18px;
@@ -111,7 +108,6 @@
       border-left: 4px solid #c62828;
     }
 
-    /* ---- Rodapé GOV ---- */
     footer {
       margin-top: 50px;
       padding: 25px;
@@ -156,7 +152,7 @@
         return;
       }
 
-      // ---- REGISTROS ----
+      /* ---- REGISTROS ---- */
 
       if (codigo === "577556-86") {
         box.style.display = "block";
@@ -192,6 +188,30 @@
           "Instituição: Centro Universitário Estácio de São Paulo<br>" +
           "Conclusão: 19/08/2025<br>" +
           "Registro: 56888-86";
+      }
+
+      else if (codigo === "466456-76") {
+        box.style.display = "block";
+        box.className = "resultado sucesso";
+        box.innerHTML =
+          "<strong>Registro encontrado!</strong><br><br>" +
+          "Nome: Claudio Roberto Braz Dias<br>" +
+          "Formação: Pós-Graduação em Psicopedagogia<br>" +
+          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
+          "Conclusão: 13/06/20223<br>" +
+          "Registro: 466456-76";
+      }
+
+      else if (codigo === "46777-76") {
+        box.style.display = "block";
+        box.className = "resultado sucesso";
+        box.innerHTML =
+          "<strong>Registro encontrado!</strong><br><br>" +
+          "Nome: Claudio Roberto Braz Dias<br>" +
+          "Formação: Bacharel em Psicopedagogia<br>" +
+          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
+          "Conclusão: 19/08/2020<br>" +
+          "Registro: 46777-76";
       }
 
       else {
