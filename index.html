@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ESTÁCIO — Sistema de Verificação (DEBUG)</title>
+  <title>Estácio — Verificação de Registro</title>
+
   <style>
     :root {
       --bg: #005daa;
@@ -12,227 +13,171 @@
       --muted: #e5e5e5;
       --text: #000;
     }
-    body { margin:0; background:var(--bg); font-family:Arial, sans-serif; display:flex; justify-content:center; padding:24px; color:var(--text); }
-    .container { background:var(--card); padding:20px; width:520px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.2); }
-    h1 { margin:0 0 8px 0; color:var(--accent); font-size:20px; }
-    input, button, select { width:100%; padding:10px; margin-top:8px; border-radius:8px; border:1px solid var(--muted); font-size:15px; box-sizing:border-box; }
-    button { background:var(--accent); color:white; border:none; cursor:pointer; }
-    .row { display:flex; gap:8px; margin-top:8px; }
-    .row button { flex:1; padding:10px; }
-    .result { margin-top:12px; text-align:left; padding:12px; background:var(--muted); border-radius:8px; min-height:48px; }
-    .logs { margin-top:10px; padding:10px; background:#f7f7f7; border-radius:8px; font-family:monospace; font-size:13px; max-height:140px; overflow:auto; display:none; }
-    .small { font-size:13px; color:#444; margin-top:6px; }
-    .examples { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
-    .chip { background:#eee; padding:6px 10px; border-radius:20px; cursor:pointer; font-size:13px; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+      color: var(--text);
+    }
+
+    .container {
+      background: var(--card);
+      padding: 20px;
+      width: 480px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--muted);
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .result {
+      margin-top: 14px;
+      background: var(--muted);
+      padding: 14px;
+      border-radius: 8px;
+      min-height: 60px;
+    }
+
+    .loading {
+      text-align: center;
+      font-weight: bold;
+      color: var(--accent);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: .5; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h1>Verificação Estácio — DEBUG</h1>
-    <p class="small">Digite o número de registro (ex: <em>466447-6</em>) ou parte do nome para busca.</p>
+    <h1>Verificação de Diploma</h1>
+    <p>Digite seu código de registro exatamente como recebido:</p>
 
-    <input id="codigo" placeholder="Digite número de registro ou nome" />
-    <div class="row">
-      <button id="btnVerificar">Verificar</button>
-      <button id="btnLimpar" style="background:#888;">Limpar</button>
-    </div>
-
-    <div class="examples small">
-      <span class="chip" data-fill="466447-6">466447-6</span>
-      <span class="chip" data-fill="57555-86">57555-86</span>
-      <span class="chip" data-fill="476546-86">476546-86</span>
-      <span class="chip" data-fill="EST123">EST123</span>
-      <span class="chip" data-fill="Maria">buscar "Maria"</span>
-    </div>
+    <input id="codigo" placeholder="Exemplo: 466447-6" />
+    <button onclick="verificar()">Verificar</button>
 
     <div id="resultado" class="result"></div>
-
-    <div style="margin-top:10px;">
-      <label><input type="checkbox" id="toggleLogs"> Mostrar logs (ajuda a identificar erro)</label>
-      <div id="logs" class="logs"></div>
-    </div>
   </div>
 
   <script>
-    // ----- Normalização universal: remove acentos -----
-    function normalizeText(str) {
-      return String(str)
+    // Remove acentos e padroniza texto
+    function normalizar(s) {
+      return String(s)
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
+        .toUpperCase()
+        .replace(/\s+/g, "")
         .trim();
     }
 
-    // Normaliza chaves (códigos)
-    function normalizeKey(s) {
-      return normalizeText(s)
-        .toUpperCase()
-        .replace(/\s+/g, "")
-        .replace(/[^\w\-]/g, "");
-    }
-
-    // ----- registros brutos -----
-    const registrosRaw = {
+    // Registros cadastrados
+    const registros = {
       "466447-6": {
         nome: "Vanessa Forasteiro G. dos Santos",
         curso: "Bacharel em Serviço Social",
         conclusao: "04/02/2025",
+        status: "Ativo",
         polo: "Centro Universitário Estácio do Rio de Janeiro"
       },
       "57555-86": {
         nome: "Alice Müller Klagenberger",
         curso: "Mestrado em Educação",
         conclusao: "19/08/2022",
+        status: "Ativo",
         polo: "Centro Universitário Estácio do Rio Grande do Sul"
       },
       "476546-86": {
         nome: "Felipe Cardoso",
         curso: "Bacharel em Psicologia",
         conclusao: "13/08/2022",
+        status: "Ativo",
         polo: "Centro Universitário Estácio de Santa Catarina"
       },
       "EST123": {
         nome: "Maria Dulce Guimarães Marques",
         curso: "Tecnólogo em Terapias Integrativas e Complementares",
         conclusao: "10/08/2025",
+        status: "Ativo",
         polo: "Estácio — Polo Campinas"
       },
       "EST456": {
         nome: "Felipe Cardoso",
         curso: "Licenciatura em Letras - Inglês",
         conclusao: "15/12/2024",
+        status: "Ativo",
         polo: "Estácio — Polo São Paulo Norte"
       },
       "EST789": {
         nome: "Tatiane Carla Valdivino Gomes Silva",
         curso: "Licenciatura em Letras - Português",
         conclusao: "15/08/2025",
+        status: "Ativo",
         polo: "Estácio — Polo Rio de Janeiro Centro"
       }
     };
 
-    // ----- criar mapa de chaves normalizadas -----
-    const registros = {};
-    Object.keys(registrosRaw).forEach(k => {
-      const nk = normalizeKey(k);
-      registros[nk] = registrosRaw[k];
-
-      // versão sem traço
-      const noDash = nk.replace(/-/g, "");
-      if (noDash !== nk) registros[noDash] = registrosRaw[k];
-    });
-
-    const resultadoEl = document.getElementById("resultado");
-    const logsEl = document.getElementById("logs");
-    const toggleLogs = document.getElementById("toggleLogs");
-
-    function log(msg) {
-      const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
-      logsEl.innerText = line + "\n" + logsEl.innerText;
-    }
-
-    toggleLogs.addEventListener("change", () => {
-      logsEl.style.display = toggleLogs.checked ? "block" : "none";
-    });
-
-    // ----- busca por nome com normalização -----
-    function searchByName(substr) {
-      const q = normalizeText(substr);
-      const matches = [];
-
-      Object.values(registrosRaw).forEach(r => {
-        if (normalizeText(r.nome).includes(q)) {
-          matches.push(r);
-        }
-      });
-
-      return matches;
-    }
-
-    function mostrarResultado(html) {
-      resultadoEl.innerHTML = html;
-    }
-
     function verificar() {
-      try {
-        const raw = document.getElementById("codigo").value.trim();
-        log(`Entrada do usuário: "${raw}"`);
+      const campo = document.getElementById("codigo");
+      const valor = campo.value.trim();
+      const saida = document.getElementById("resultado");
 
-        if (!raw) {
-          mostrarResultado("<strong>Digite um código ou nome para buscar.</strong>");
-          return;
-        }
-
-        const norm = normalizeKey(raw);
-        log(`Chave normalizada: "${norm}"`);
-
-        // ---- Busca direta por código ----
-        if (registros[norm]) {
-          const r = registros[norm];
-          mostrarResultado(`
-            <strong>Aluno:</strong> ${r.nome}<br>
-            <strong>Curso:</strong> ${r.curso}<br>
-            <strong>Conclusão:</strong> ${r.conclusao}<br>
-            <strong>Polo:</strong> ${r.polo}
-          `);
-          log(`Encontrado por chave: ${JSON.stringify(r)}`);
-          return;
-        }
-
-        // ---- Busca por nome ----
-        const letters = raw.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
-        if (letters.length >= 3) {
-          log("Tentando busca por nome...");
-          const matches = searchByName(raw);
-
-          if (matches.length === 1) {
-            const r = matches[0];
-            mostrarResultado(`
-              <strong>Aluno:</strong> ${r.nome}<br>
-              <strong>Curso:</strong> ${r.curso}<br>
-              <strong>Conclusão:</strong> ${r.conclusao}<br>
-              <strong>Polo:</strong> ${r.polo}
-            `);
-            log(`Encontrado por nome: ${JSON.stringify(r)}`);
-            return;
-          }
-
-          if (matches.length > 1) {
-            mostrarResultado(`<strong>${matches.length} resultados encontrados:</strong><br>` +
-              matches.map(m => `• ${m.nome} — ${m.curso} (${m.conclusao})`).join("<br>")
-            );
-            log(`Múltiplos resultados (${matches.length})`);
-            return;
-          }
-
-          log("Nenhum resultado encontrado por nome.");
-        }
-
-        mostrarResultado("<strong>Código não encontrado.</strong>");
-        log("Nenhum resultado encontrado.");
-      } catch(err) {
-        mostrarResultado(`<strong>Erro interno:</strong> ${err.message}`);
-        log("Erro: " + err.message);
+      if (!valor) {
+        saida.innerHTML = "<strong>Digite um código.</strong>";
+        return;
       }
+
+      // Mostra carregando
+      saida.innerHTML = '<div class="loading">Carregando...</div>';
+
+      setTimeout(() => {
+        const chave = Object.keys(registros).find(k => normalizar(k) === normalizar(valor));
+
+        if (!chave) {
+          saida.innerHTML = "<strong>Código não encontrado.</strong>";
+          return;
+        }
+
+        const r = registros[chave];
+
+        saida.innerHTML = `
+          <strong>Aluno:</strong> ${r.nome}<br/>
+          <strong>Curso:</strong> ${r.curso}<br/>
+          <strong>Conclusão:</strong> ${r.conclusao}<br/>
+          <strong>Status:</strong> ${r.status}<br/>
+          <strong>Polo:</strong> ${r.polo}
+        `;
+      }, 1200); // tempo do "carregando"
     }
-
-    document.getElementById("btnVerificar").addEventListener("click", verificar);
-
-    document.getElementById("btnLimpar").addEventListener("click", () => {
-      document.getElementById("codigo").value = "";
-      mostrarResultado("");
-    });
-
-    document.querySelectorAll(".chip").forEach(c => {
-      c.addEventListener("click", () => {
-        document.getElementById("codigo").value = c.dataset.fill;
-        verificar();
-      });
-    });
-
-    // LOG inicial
-    log("Mapa de chaves normalizadas carregado:");
-    Object.keys(registros).forEach(k => log(" - " + k));
   </script>
 </body>
 </html>
