@@ -26,16 +26,23 @@
 
     .container {
       background: var(--card);
-      padding: 20px;
+      padding: 24px;
       width: 480px;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.25);
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.22);
     }
 
     h1 {
       margin: 0 0 10px 0;
       color: var(--accent);
       text-align: center;
+      font-size: 26px;
+    }
+
+    p {
+      text-align: center;
+      margin-bottom: 18px;
+      color: #333;
     }
 
     input, button {
@@ -81,16 +88,15 @@
 <body>
   <div class="container">
     <h1>Verificação de Diploma</h1>
-    <p>Digite seu código de registro exatamente como recebido:</p>
+    <p>Digite o número de registro exatamente como informado:</p>
 
-    <input id="codigo" placeholder="Exemplo: 466447-6" />
+    <input id="codigo" placeholder="Ex: 466447-6" />
     <button onclick="verificar()">Verificar</button>
 
     <div id="resultado" class="result"></div>
   </div>
 
   <script>
-    // Remove acentos e padroniza texto
     function normalizar(s) {
       return String(s)
         .normalize("NFD")
@@ -100,7 +106,7 @@
         .trim();
     }
 
-    // Registros cadastrados
+    // 📌 REGISTROS OFICIAIS
     const registros = {
       "466447-6": {
         nome: "Vanessa Forasteiro G. dos Santos",
@@ -147,8 +153,7 @@
     };
 
     function verificar() {
-      const campo = document.getElementById("codigo");
-      const valor = campo.value.trim();
+      const valor = document.getElementById("codigo").value.trim();
       const saida = document.getElementById("resultado");
 
       if (!valor) {
@@ -156,11 +161,12 @@
         return;
       }
 
-      // Mostra carregando
+      // Animação de carregando
       saida.innerHTML = '<div class="loading">Carregando...</div>';
 
       setTimeout(() => {
-        const chave = Object.keys(registros).find(k => normalizar(k) === normalizar(valor));
+        const chave = Object.keys(registros)
+          .find(k => normalizar(k) === normalizar(valor));
 
         if (!chave) {
           saida.innerHTML = "<strong>Código não encontrado.</strong>";
@@ -176,7 +182,7 @@
           <strong>Status:</strong> ${r.status}<br/>
           <strong>Polo:</strong> ${r.polo}
         `;
-      }, 1200); // tempo do "carregando"
+      }, 1200);
     }
   </script>
 </body>
