@@ -1,393 +1,118 @@
 <!doctype html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sistema de Verificação — Padrão GOV.BR</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ESTÁCIO — Sistema de Verificação</title>
   <style>
-    /* ---- Paleta oficial GOV.BR ---- */
     :root {
-      --gov-azul: #1351b4;
-      --gov-amarelo: #f2c94c;
-      --gov-cinza-escuro: #4a4a4a;
-      --gov-cinza-claro: #f2f2f2;
-      --gov-card: #ffffff;
-      --gov-borda: #dcdcdc;
+      --bg: #005daa;
+      --card: #fff;
+      --accent: #003f73;
+      --muted: #e5e5e5;
+      --text: #000;
     }
 
     body {
       margin: 0;
-      background: var(--gov-cinza-claro);
-      font-family: "Rawline", Arial, sans-serif;
-      color: var(--gov-cinza-escuro);
-    }
-
-    header {
-      background: var(--gov-azul);
-      color: white;
-      padding: 18px 24px;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    header span {
-      background: var(--gov-amarelo);
-      color: #000;
-      padding: 3px 6px;
-      border-radius: 4px;
-      margin-right: 4px;
+      background: var(--bg);
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: var(--text);
     }
 
     .container {
-      max-width: 760px;
-      margin: 40px auto;
-      background: var(--gov-card);
+      background: var(--card);
       padding: 30px;
-      border-radius: 6px;
-      border: 1px solid var(--gov-borda);
+      width: 420px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      text-align: center;
     }
 
-    h2 {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: var(--gov-azul);
+    h1 {
+      margin-top: 0;
+      color: var(--accent);
     }
 
-    label {
-      font-weight: 600;
-      display: block;
-      margin-top: 15px;
-    }
-
-    input {
+    input, button {
       width: 100%;
       padding: 12px;
-      border-radius: 4px;
-      border: 1px solid var(--gov-borda);
-      margin-top: 6px;
-      font-size: 15px;
-      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--muted);
+      margin-top: 10px;
+      font-size: 16px;
     }
 
     button {
-      margin-top: 22px;
-      width: 100%;
-      padding: 14px;
-      background: var(--gov-azul);
+      background: var(--accent);
       color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: 600;
       cursor: pointer;
+      border: none;
     }
 
-    button:hover {
-      background: #0f4498;
-    }
-
-    .resultado {
-      margin-top: 25px;
-      padding: 18px;
-      border-radius: 4px;
-      border: 1px solid var(--gov-borda);
+    .result {
+      margin-top: 20px;
+      text-align: left;
+      padding: 15px;
+      background: var(--muted);
+      border-radius: 8px;
       display: none;
-    }
-
-    .sucesso {
-      background: #e6f4ea;
-      border-left: 4px solid #2e7d32;
-    }
-
-    .erro {
-      background: #fdecea;
-      border-left: 4px solid #c62828;
-    }
-
-    footer {
-      margin-top: 50px;
-      padding: 25px;
-      background: var(--gov-azul);
-      color: white;
-      text-align: center;
-      font-size: 14px;
     }
   </style>
 </head>
-
 <body>
-
-  <header>
-    <span>gov.br</span> Sistema Oficial de Verificação Acadêmica
-  </header>
-
   <div class="container">
-    <h2>Consulta de Autenticidade</h2>
-
-    <label>Código de Verificação</label>
-    <input id="codigo" type="text" placeholder="Digite o código do diploma">
-
-    <button onclick="verificar()">Consultar</button>
-
-    <div id="resultado" class="resultado"></div>
+    <h1>Verificação Estácio</h1>
+    <p>Insira o código entregue pelo aluno:</p>
+    <input id="codigo" placeholder="Digite o código Estácio" />
+    <button onclick="verificar()">Verificar</button>
+    <div id="resultado" class="result"></div>
   </div>
 
-  <footer>
-    © 2025 • Plataforma Integrada de Serviços Digitais — GOV.BR
-  </footer>
-
   <script>
+    const registros = {
+      "EST123": {
+        nome: "Maria Dulce Guimarães Marques",
+        curso: "Tecnólogo em Terapias Integrativas e Complementares",
+        conclusao: "10/08/2025",
+        polo: "Estácio — Polo Campinas"
+      },
+      "EST456": {
+        nome: "Felipe Cardoso",
+        curso: "Licenciatura em Letras - Inglês",
+        conclusao: "15/12/2024",
+        polo: "Estácio — Polo São Paulo Norte"
+      },
+      "EST789": {
+        nome: "Tatiane Carla Valdivino Gomes Silva",
+        curso: "Licenciatura em Letras - Português",
+        conclusao: "15/08/2025",
+        polo: "Estácio — Polo Rio de Janeiro Centro"
+      }
+    };
+
     function verificar() {
-      const codigo = document.getElementById("codigo").value.trim();
-      const box = document.getElementById("resultado");
+      const codigo = document.getElementById("codigo").value.trim().toUpperCase();
+      const resultado = document.getElementById("resultado");
 
-      if (codigo === "") {
-        box.style.display = "block";
-        box.className = "resultado erro";
-        box.innerHTML = "<strong>Erro:</strong> Informe um código válido.";
-        return;
-      }
-
-      /* ---- REGISTROS ---- */
-
-      if (codigo === "577556-86") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: José Cristóvão Urbano da Silva Filho<br>" +
-          "Formação: Técnico de Enfermagem<br>" +
-          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
-          "Conclusão: 10/06/2025<br>" +
-          "Registro: 577556-86";
-      }
-
-      else if (codigo === "57766-77") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Franciele Ferreira de Melo S. Siqueira<br>" +
-          "Formação: Bacharel em Farmácia<br>" +
-          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
-          "Conclusão: 14/06/2025<br>" +
-          "Registro: 57766-77";
-      }
-
-      else if (codigo === "56888-86") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Claudio Roberto Braz Dias<br>" +
-          "Formação: Licenciatura em Informática<br>" +
-          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
-          "Conclusão: 19/08/2025<br>" +
-          "Registro: 56888-86";
-      }
-
-      else if (codigo === "466456-76") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Claudio Roberto Braz Dias<br>" +
-          "Formação: Pós-Graduação em Psicopedagogia<br>" +
-          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
-          "Conclusão: 13/06/2023<br>" +
-          "Registro: 466456-76";
-      }
-
-      else if (codigo === "46777-76") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Claudio Roberto Braz Dias<br>" +
-          "Formação: Bacharel em Psicopedagogia<br>" +
-          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
-          "Conclusão: 19/08/2020<br>" +
-          "Registro: 46777-76";
-      }
-
-      else if (codigo === "47854-86") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Antônio Eric Teixeira Beserra<br>" +
-          "Formação: Licenciatura em Pedagogia<br>" +
-          "Instituição: Centro Universitário Estácio do Ceará<br>" +
-          "Conclusão: 10/08/2025<br>" +
-          "Registro: 47854-86";
-      }
-
-      else if (codigo === "477545-86") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Mayra Priscila Lopes de Moraes Farias<br>" +
-          "Formação: Bacharel em Psicologia<br>" +
-          "Instituição: Centro Universitário Estácio do Recife<br>" +
-          "Conclusão: 10/08/2025<br>" +
-          "Registro: 477545-86";
-      }
-
-      /* ---- NOVOS REGISTROS ---- */
-
-      else if (codigo === "454454-76") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Laura Mendonça de Assis Alves Viana<br>" +
-          "Formação: Bacharel em Psicologia<br>" +
-          "Instituição: Centro Universitário Estácio do Rio de Janeiro<br>" +
-          "Conclusão: 10/08/2025<br>" +
-          "Registro: 454454-76";
-      }
-
-      else if (codigo === "36445-46") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Laura Mendonça de Assis Alves Viana<br>" +
-          "Formação: Bacharel em Fisioterapia<br>" +
-          "Instituição: Centro Universitário Estácio do Rio de Janeiro<br>" +
-          "Conclusão: 31/08/2024<br>" +
-          "Registro: 36445-46";
-      }
-
-      else if (codigo === "36545-75") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Luciana Assis Alves Viana<br>" +
-          "Formação: Bacharel em Psicologia<br>" +
-          "Instituição: Centro Universitário Estácio do Rio de Janeiro<br>" +
-          "Conclusão: 10/08/2025<br>" +
-          "Registro: 36545-75";
-      }
-
-      else if (codigo === "47655-87") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Karla Santos Dutra<br>" +
-          "Formação: Bacharel em Psicologia<br>" +
-          "Instituição: Centro Universitário Estácio do Rio de Janeiro<br>" +
-          "Conclusão: 26/08/2025<br>" +
-          "Registro: 47655-87";
-      }
-
-      /* ---- REGISTRO DO RAFAEL ---- */
-      else if (codigo === "486467-85") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Rafael Victor Andrade de Lucena<br>" +
-          "Formação: Mestrado em Educação<br>" +
-          "Instituição: Centro Universitário Estácio de Pernambuco<br>" +
-          "Conclusão: 10/05/2025<br>" +
-          "Registro: 486467-85";
-      }
-
-      /* ---- REGISTRO DA SANDRA ---- */
-      else if (codigo === "475577-86") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Sandra Cristina Figueiredo Ferreira<br>" +
-          "Formação: Pós-Graduação em Psicologia da Educação<br>" +
-          "Instituição: Centro Universitário Estácio da Bahia<br>" +
-          "Conclusão: 22/08/2025<br>" +
-          "Registro: 475577-86";
-      }
-
-      /* ---- REGISTRO DA DINÁ ---- */
-      else if (codigo === "47646-86") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Diná da Silva Barros<br>" +
-          "Formação: Pós-Graduação em Psicopedagogia<br>" +
-          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
-          "Conclusão: 24/06/2025<br>" +
-          "Registro: 47646-86";
-      }
-
-      /* ---- REGISTRO DO ROBERTO DIEGO ---- */
-      else if (codigo === "57656-74") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Roberto Diego Lopes Valadares<br>" +
-          "Formação: Pós-Graduação em Neuropsicologia<br>" +
-          "Instituição: Centro Universitario Estácio de São Paulo<br>" +
-          "Conclusão: 30/06/2024<br>" +
-          "Registro: 57656-74";
-      }
-
-      /* ---- REGISTRO DA ARIADNE ---- */
-      else if (codigo === "47544-76") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Ariadne Sinele Barbosa Alves de Oliveira<br>" +
-          "Formação: Bacharel em Psicologia<br>" +
-          "Instituição: Centro Universitário Estácio da Bahia<br>" +
-          "Conclusão: 10/08/2024<br>" +
-          "Registro: 47544-76";
-      }
-
-      /* ---- REGISTRO DA MAURA ---- */
-      else if (codigo === "57656-76") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Maura Lucia Felix<br>" +
-          "Formação: Pedagogia com Habilitação em Orientação Pedagógica<br>" +
-          "Instituição: Centro Universitário Estácio de São Paulo<br>" +
-          "Conclusão: 10/08/2010<br>" +
-          "Registro: 57656-76";
-      }
-
-      /* ---- REGISTRO DO FELIPE CARDOSO ---- */
-      else if (codigo === "465446-85") {
-        box.style.display = "block";
-        box.className = "resultado sucesso";
-        box.innerHTML =
-          "<strong>Registro encontrado!</strong><br><br>" +
-          "Nome: Felipe Cardoso<br>" +
-          "Formação: Licenciatura em Letras - Espanhol<br>" +
-          "Instituição: Centro Universitário Estácio de Santa Catarina<br>" +
-          "Conclusão: 10/02/2026<br>" +
-          "Registro: 465446-85";
-      }
-
-      /* ---- NÃO ENCONTRADO ---- */
-      else {
-        box.style.display = "block";
-        box.className = "resultado erro";
-        box.innerHTML =
-          "<strong>Não encontrado:</strong> Nenhum registro corresponde ao código informado.";
+      if (registros[codigo]) {
+        const r = registros[codigo];
+        resultado.style.display = "block";
+        resultado.innerHTML = `
+          <strong>Aluno:</strong> ${r.nome}<br>
+          <strong>Curso:</strong> ${r.curso}<br>
+          <strong>Conclusão:</strong> ${r.conclusao}<br>
+          <strong>Polo:</strong> ${r.polo}
+        `;
+      } else {
+        resultado.style.display = "block";
+        resultado.innerHTML = "<strong>Código não encontrado.</strong> Verifique e tente novamente.";
       }
     }
   </script>
-
 </body>
 </html>
