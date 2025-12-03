@@ -68,13 +68,33 @@
   <div class="container">
     <h1>Verificação Estácio</h1>
     <p>Insira o código entregue pelo aluno:</p>
-    <input id="codigo" placeholder="Digite o código Estácio" />
+    <input id="codigo" placeholder="Digite o número de registro" />
     <button onclick="verificar()">Verificar</button>
     <div id="resultado" class="result"></div>
   </div>
 
   <script>
     const registros = {
+      "466447-6": {
+        nome: "Vanessa Forasteiro G. dos Santos",
+        curso: "Bacharel em Serviço Social",
+        conclusao: "04/02/2025",
+        polo: "Centro Universitário Estácio do Rio de Janeiro"
+      },
+      "57555-86": {
+        nome: "Alice Müller Klagenberger",
+        curso: "Mestrado em Educação",
+        conclusao: "19/08/2022",
+        polo: "Centro Universitário Estácio do Rio Grande do Sul"
+      },
+      "476546-86": {
+        nome: "Felipe Cardoso",
+        curso: "Bacharel em Psicologia",
+        conclusao: "13/08/2022",
+        polo: "Centro Universitário Estácio de Santa Catarina"
+      },
+
+      /* REGISTROS ANTIGOS QUE VOCÊ JÁ TINHA */
       "EST123": {
         nome: "Maria Dulce Guimarães Marques",
         curso: "Tecnólogo em Terapias Integrativas e Complementares",
@@ -96,7 +116,7 @@
     };
 
     function verificar() {
-      const codigo = document.getElementById("codigo").value.trim().toUpperCase();
+      const codigo = document.getElementById("codigo").value.trim();
       const resultado = document.getElementById("resultado");
 
       if (registros[codigo]) {
