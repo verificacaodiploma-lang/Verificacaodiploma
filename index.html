@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ESTÁCIO — Sistema de Verificação</title>
+  <title>ESTÁCIO — Sistema de Verificação (DEBUG)</title>
   <style>
     :root {
       --bg: #005daa;
@@ -12,69 +12,50 @@
       --muted: #e5e5e5;
       --text: #000;
     }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: var(--text);
-    }
-
-    .container {
-      background: var(--card);
-      padding: 30px;
-      width: 420px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      text-align: center;
-    }
-
-    h1 {
-      margin-top: 0;
-      color: var(--accent);
-    }
-
-    input, button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--muted);
-      margin-top: 10px;
-      font-size: 16px;
-    }
-
-    button {
-      background: var(--accent);
-      color: white;
-      cursor: pointer;
-      border: none;
-    }
-
-    .result {
-      margin-top: 20px;
-      text-align: left;
-      padding: 15px;
-      background: var(--muted);
-      border-radius: 8px;
-      display: none;
-    }
+    body { margin:0; background:var(--bg); font-family:Arial, sans-serif; display:flex; justify-content:center; padding:24px; color:var(--text); }
+    .container { background:var(--card); padding:20px; width:520px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.2); }
+    h1 { margin:0 0 8px 0; color:var(--accent); font-size:20px; }
+    input, button, select { width:100%; padding:10px; margin-top:8px; border-radius:8px; border:1px solid var(--muted); font-size:15px; box-sizing:border-box; }
+    button { background:var(--accent); color:white; border:none; cursor:pointer; }
+    .row { display:flex; gap:8px; margin-top:8px; }
+    .row button { flex:1; padding:10px; }
+    .result { margin-top:12px; text-align:left; padding:12px; background:var(--muted); border-radius:8px; min-height:48px; }
+    .logs { margin-top:10px; padding:10px; background:#f7f7f7; border-radius:8px; font-family:monospace; font-size:13px; max-height:140px; overflow:auto; display:none; }
+    .small { font-size:13px; color:#444; margin-top:6px; }
+    .examples { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .chip { background:#eee; padding:6px 10px; border-radius:20px; cursor:pointer; font-size:13px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Verificação Estácio</h1>
-    <p>Insira o código entregue pelo aluno:</p>
-    <input id="codigo" placeholder="Digite o número de registro" />
-    <button onclick="verificar()">Verificar</button>
+    <h1>Verificação Estácio — DEBUG</h1>
+    <p class="small">Digite o número de registro (ex: <em>466447-6</em>) ou parte do nome para busca.</p>
+
+    <input id="codigo" placeholder="Digite número de registro ou nome" />
+    <div class="row">
+      <button id="btnVerificar">Verificar</button>
+      <button id="btnLimpar" style="background:#888;">Limpar</button>
+    </div>
+
+    <div class="examples small">
+      <span class="chip" data-fill="466447-6">466447-6</span>
+      <span class="chip" data-fill="57555-86">57555-86</span>
+      <span class="chip" data-fill="476546-86">476546-86</span>
+      <span class="chip" data-fill="EST123">EST123</span>
+      <span class="chip" data-fill="Maria">buscar "Maria"</span>
+    </div>
+
     <div id="resultado" class="result"></div>
+
+    <div style="margin-top:10px;">
+      <label><input type="checkbox" id="toggleLogs"> Mostrar logs (ajuda a identificar erro)</label>
+      <div id="logs" class="logs"></div>
+    </div>
   </div>
 
   <script>
-    const registros = {
+    // ----- dados originais -----
+    const registrosRaw = {
       "466447-6": {
         nome: "Vanessa Forasteiro G. dos Santos",
         curso: "Bacharel em Serviço Social",
@@ -93,8 +74,6 @@
         conclusao: "13/08/2022",
         polo: "Centro Universitário Estácio de Santa Catarina"
       },
-
-      /* REGISTROS ANTIGOS QUE VOCÊ JÁ TINHA */
       "EST123": {
         nome: "Maria Dulce Guimarães Marques",
         curso: "Tecnólogo em Terapias Integrativas e Complementares",
@@ -115,24 +94,129 @@
       }
     };
 
-    function verificar() {
-      const codigo = document.getElementById("codigo").value.trim();
-      const resultado = document.getElementById("resultado");
+    // ----- normalização de chaves (aceita com/sem traço, espaços, case) -----
+    function normalizeKey(s) {
+      if (!s && s !== 0) return "";
+      return String(s).toUpperCase().replace(/\s+/g, "").replace(/[^\w\-]/g, "");
+      // mantém letras, números e traço. remove acentos/cedilha? acentos permanecem em nomes, mas buscamos por substring de nome separadamente.
+    }
 
-      if (registros[codigo]) {
-        const r = registros[codigo];
-        resultado.style.display = "block";
-        resultado.innerHTML = `
-          <strong>Aluno:</strong> ${r.nome}<br>
-          <strong>Curso:</strong> ${r.curso}<br>
-          <strong>Conclusão:</strong> ${r.conclusao}<br>
-          <strong>Polo:</strong> ${r.polo}
-        `;
-      } else {
-        resultado.style.display = "block";
-        resultado.innerHTML = "<strong>Código não encontrado.</strong> Verifique e tente novamente.";
+    // construir mapa normalizado com e sem traço (quando aplicável)
+    const registros = {};
+    Object.keys(registrosRaw).forEach(k => {
+      const norm = normalizeKey(k);
+      registros[norm] = registrosRaw[k];
+      // se for número com traço, também adicionar versão sem traço
+      const noDash = norm.replace(/-/g, "");
+      if (noDash !== norm) registros[noDash] = registrosRaw[k];
+    });
+
+    // utilidades UI
+    const resultadoEl = document.getElementById("resultado");
+    const logsEl = document.getElementById("logs");
+    const toggleLogs = document.getElementById("toggleLogs");
+
+    function log(msg) {
+      const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logsEl.innerText = line + "\n" + logsEl.innerText;
+    }
+
+    toggleLogs.addEventListener("change", () => {
+      logsEl.style.display = toggleLogs.checked ? "block" : "none";
+    });
+
+    // busca por substring no nome (insensitive)
+    function searchByName(substr) {
+      const q = String(substr).toLowerCase();
+      const matches = [];
+      Object.values(registrosRaw).forEach(r => {
+        if (r.nome && r.nome.toLowerCase().includes(q)) matches.push(r);
+      });
+      return matches;
+    }
+
+    function mostrarResultado(textHtml) {
+      resultadoEl.innerHTML = textHtml;
+    }
+
+    function verificar() {
+      try {
+        const raw = document.getElementById("codigo").value.trim();
+        log(`Entrada do usuário: "${raw}"`);
+        if (!raw) {
+          mostrarResultado("<strong>Digite um código ou nome para buscar.</strong>");
+          return;
+        }
+
+        const norm = normalizeKey(raw);
+        log(`Chave normalizada: "${norm}"`);
+
+        // busca direta por chave normalizada
+        if (registros[norm]) {
+          const r = registros[norm];
+          mostrarResultado(`
+            <strong>Aluno:</strong> ${r.nome}<br>
+            <strong>Curso:</strong> ${r.curso}<br>
+            <strong>Conclusão:</strong> ${r.conclusao}<br>
+            <strong>Polo:</strong> ${r.polo}
+          `);
+          log(`Registro encontrado pela chave: ${JSON.stringify(r)}`);
+          return;
+        }
+
+        // se não achou por chave, tentar buscar por nome (entrada com letras ou espaço)
+        // só tenta busca por nome se a entrada tiver pelo menos 3 caracteres alfabeticos
+        const lettersOnly = raw.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
+        if (lettersOnly.length >= 3) {
+          log('Tentando busca por nome (entrada parece textual).');
+          const matches = searchByName(raw);
+          if (matches.length === 1) {
+            const r = matches[0];
+            mostrarResultado(`
+              <strong>Aluno:</strong> ${r.nome}<br>
+              <strong>Curso:</strong> ${r.curso}<br>
+              <strong>Conclusão:</strong> ${r.conclusao}<br>
+              <strong>Polo:</strong> ${r.polo}
+            `);
+            log(`Registro encontrado por nome: ${JSON.stringify(r)}`);
+            return;
+          } else if (matches.length > 1) {
+            mostrarResultado(`<strong>Foram encontrados ${matches.length} resultados (busca por nome):</strong><br>` +
+              matches.map(m => `• ${m.nome} — ${m.curso} (${m.conclusao})`).join("<br>"));
+            log(`Vários resultados encontrados por nome (${matches.length}).`);
+            return;
+          } else {
+            log('Nenhum resultado por nome.');
+          }
+        }
+
+        // se chegar aqui, não encontrou
+        mostrarResultado(`<strong>Código não encontrado.</strong> Verifique formato. (Tentativas: chave="${norm}")`);
+        log('Resultado: não encontrado.');
+      } catch (err) {
+        mostrarResultado(`<strong>Erro interno:</strong> ${err.message}`);
+        log('Erro interno: ' + (err && err.message ? err.message : String(err)));
       }
     }
+
+    // eventos
+    document.getElementById("btnVerificar").addEventListener("click", verificar);
+    document.getElementById("btnLimpar").addEventListener("click", () => {
+      document.getElementById("codigo").value = "";
+      mostrarResultado("");
+    });
+
+    // preencher com exemplos
+    document.querySelectorAll(".chip").forEach(c => {
+      c.addEventListener("click", () => {
+        document.getElementById("codigo").value = c.dataset.fill;
+        verificar();
+      });
+    });
+
+    // DEBUG: mostrar mapa de chaves normalizadas (útil para ver por que entradas falham)
+    log("Mapa de chaves normalizadas carregado:");
+    Object.keys(registros).forEach(k => log(" - " + k));
   </script>
 </body>
 </html>
