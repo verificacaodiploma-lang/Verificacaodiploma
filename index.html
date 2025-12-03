@@ -54,7 +54,24 @@
   </div>
 
   <script>
-    // ----- dados originais -----
+    // ----- Normalização universal: remove acentos -----
+    function normalizeText(str) {
+      return String(str)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    // Normaliza chaves (códigos)
+    function normalizeKey(s) {
+      return normalizeText(s)
+        .toUpperCase()
+        .replace(/\s+/g, "")
+        .replace(/[^\w\-]/g, "");
+    }
+
+    // ----- registros brutos -----
     const registrosRaw = {
       "466447-6": {
         nome: "Vanessa Forasteiro G. dos Santos",
@@ -94,24 +111,17 @@
       }
     };
 
-    // ----- normalização de chaves (aceita com/sem traço, espaços, case) -----
-    function normalizeKey(s) {
-      if (!s && s !== 0) return "";
-      return String(s).toUpperCase().replace(/\s+/g, "").replace(/[^\w\-]/g, "");
-      // mantém letras, números e traço. remove acentos/cedilha? acentos permanecem em nomes, mas buscamos por substring de nome separadamente.
-    }
-
-    // construir mapa normalizado com e sem traço (quando aplicável)
+    // ----- criar mapa de chaves normalizadas -----
     const registros = {};
     Object.keys(registrosRaw).forEach(k => {
-      const norm = normalizeKey(k);
-      registros[norm] = registrosRaw[k];
-      // se for número com traço, também adicionar versão sem traço
-      const noDash = norm.replace(/-/g, "");
-      if (noDash !== norm) registros[noDash] = registrosRaw[k];
+      const nk = normalizeKey(k);
+      registros[nk] = registrosRaw[k];
+
+      // versão sem traço
+      const noDash = nk.replace(/-/g, "");
+      if (noDash !== nk) registros[noDash] = registrosRaw[k];
     });
 
-    // utilidades UI
     const resultadoEl = document.getElementById("resultado");
     const logsEl = document.getElementById("logs");
     const toggleLogs = document.getElementById("toggleLogs");
@@ -125,24 +135,29 @@
       logsEl.style.display = toggleLogs.checked ? "block" : "none";
     });
 
-    // busca por substring no nome (insensitive)
+    // ----- busca por nome com normalização -----
     function searchByName(substr) {
-      const q = String(substr).toLowerCase();
+      const q = normalizeText(substr);
       const matches = [];
+
       Object.values(registrosRaw).forEach(r => {
-        if (r.nome && r.nome.toLowerCase().includes(q)) matches.push(r);
+        if (normalizeText(r.nome).includes(q)) {
+          matches.push(r);
+        }
       });
+
       return matches;
     }
 
-    function mostrarResultado(textHtml) {
-      resultadoEl.innerHTML = textHtml;
+    function mostrarResultado(html) {
+      resultadoEl.innerHTML = html;
     }
 
     function verificar() {
       try {
         const raw = document.getElementById("codigo").value.trim();
         log(`Entrada do usuário: "${raw}"`);
+
         if (!raw) {
           mostrarResultado("<strong>Digite um código ou nome para buscar.</strong>");
           return;
@@ -151,7 +166,7 @@
         const norm = normalizeKey(raw);
         log(`Chave normalizada: "${norm}"`);
 
-        // busca direta por chave normalizada
+        // ---- Busca direta por código ----
         if (registros[norm]) {
           const r = registros[norm];
           mostrarResultado(`
@@ -160,16 +175,16 @@
             <strong>Conclusão:</strong> ${r.conclusao}<br>
             <strong>Polo:</strong> ${r.polo}
           `);
-          log(`Registro encontrado pela chave: ${JSON.stringify(r)}`);
+          log(`Encontrado por chave: ${JSON.stringify(r)}`);
           return;
         }
 
-        // se não achou por chave, tentar buscar por nome (entrada com letras ou espaço)
-        // só tenta busca por nome se a entrada tiver pelo menos 3 caracteres alfabeticos
-        const lettersOnly = raw.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
-        if (lettersOnly.length >= 3) {
-          log('Tentando busca por nome (entrada parece textual).');
+        // ---- Busca por nome ----
+        const letters = raw.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
+        if (letters.length >= 3) {
+          log("Tentando busca por nome...");
           const matches = searchByName(raw);
+
           if (matches.length === 1) {
             const r = matches[0];
             mostrarResultado(`
@@ -178,35 +193,36 @@
               <strong>Conclusão:</strong> ${r.conclusao}<br>
               <strong>Polo:</strong> ${r.polo}
             `);
-            log(`Registro encontrado por nome: ${JSON.stringify(r)}`);
+            log(`Encontrado por nome: ${JSON.stringify(r)}`);
             return;
-          } else if (matches.length > 1) {
-            mostrarResultado(`<strong>Foram encontrados ${matches.length} resultados (busca por nome):</strong><br>` +
-              matches.map(m => `• ${m.nome} — ${m.curso} (${m.conclusao})`).join("<br>"));
-            log(`Vários resultados encontrados por nome (${matches.length}).`);
-            return;
-          } else {
-            log('Nenhum resultado por nome.');
           }
+
+          if (matches.length > 1) {
+            mostrarResultado(`<strong>${matches.length} resultados encontrados:</strong><br>` +
+              matches.map(m => `• ${m.nome} — ${m.curso} (${m.conclusao})`).join("<br>")
+            );
+            log(`Múltiplos resultados (${matches.length})`);
+            return;
+          }
+
+          log("Nenhum resultado encontrado por nome.");
         }
 
-        // se chegar aqui, não encontrou
-        mostrarResultado(`<strong>Código não encontrado.</strong> Verifique formato. (Tentativas: chave="${norm}")`);
-        log('Resultado: não encontrado.');
-      } catch (err) {
+        mostrarResultado("<strong>Código não encontrado.</strong>");
+        log("Nenhum resultado encontrado.");
+      } catch(err) {
         mostrarResultado(`<strong>Erro interno:</strong> ${err.message}`);
-        log('Erro interno: ' + (err && err.message ? err.message : String(err)));
+        log("Erro: " + err.message);
       }
     }
 
-    // eventos
     document.getElementById("btnVerificar").addEventListener("click", verificar);
+
     document.getElementById("btnLimpar").addEventListener("click", () => {
       document.getElementById("codigo").value = "";
       mostrarResultado("");
     });
 
-    // preencher com exemplos
     document.querySelectorAll(".chip").forEach(c => {
       c.addEventListener("click", () => {
         document.getElementById("codigo").value = c.dataset.fill;
@@ -214,7 +230,7 @@
       });
     });
 
-    // DEBUG: mostrar mapa de chaves normalizadas (útil para ver por que entradas falham)
+    // LOG inicial
     log("Mapa de chaves normalizadas carregado:");
     Object.keys(registros).forEach(k => log(" - " + k));
   </script>
